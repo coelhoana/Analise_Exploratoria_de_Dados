@@ -1,10 +1,7 @@
 # Análise Exploratória de Dados Municipais de Minas Gerais
 
-Integrantes:
-Ana Luiza Coelho,
-Carolina,
-Samara Felix,
-Tainá.
+Integrante:
+Ana Luiza Coelho
 
 ## Estrutura do Projeto
 
