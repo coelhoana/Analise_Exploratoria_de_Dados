@@ -1,0 +1,1531 @@
+---
+title: " Análise Exploratória de Dados Municipais de Minas Gerais"
+subtitle: "Introdução à Ciência de Dados"
+author: "Ana Luiza, Carolina, Samara, Tainá"
+date: today
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    colorlinks: true
+    smooth-scroll: true
+    code-fold: true
+
+editor: visual
+lang: pt
+
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{=html}
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    font-family: 'Outfit', 'Inter', sans-serif;
+    background-color: #f4f6f9;
+    color: #2c3e50;
+  }
+  .main-container {
+    max-width: 1200px;
+    padding: 20px;
+  }
+  h1, h2, h3, h4 {
+    color: #1e3d59;
+    font-weight: 700;
+  }
+  h1.title {
+    color: #1e3d59;
+    font-weight: 800;
+    font-size: 2.3rem;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    font-family: 'Outfit', sans-serif;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 15px;
+  }
+  .tocify {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    background-color: white;
+    padding: 10px;
+  }
+  .tocify-item {
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #2c3e50;
+  }
+  .tocify-item.active {
+    background-color: #1e3d59 !important;
+    color: white !important;
+  }
+  .table {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    border-collapse: separate;
+    border-spacing: 0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    margin-bottom: 25px;
+  }
+  .table th {
+    background-color: #1e3d59 !important;
+    color: white !important;
+    font-weight: 600;
+  }
+  .section-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    border-left: 5px solid #1e3d59;
+  }
+</style>
+```
+
+::: section-card
+## Introdução
+
+Minas Gerais é o segundo estado mais populoso do Brasil e possui 853 municípios, sendo o estado com o maior número de municípios do país. Essa grande diversidade entre as cidades permite analisar diferentes realidades socioeconômicas presentes no território mineiro. Enquanto municípios como Belo Horizonte e Uberlândia apresentam maior concentração populacional e econômica, muitas cidades de menor porte, principalmente nas regiões norte e noroeste do estado, enfrentam desafios relacionados ao desenvolvimento humano e à infraestrutura.
+
+Este relatório apresenta uma Análise Exploratória de Dados utilizando indicadores municipais de Minas Gerais disponibilizados pelo IBGE. Foram analisadas variáveis relacionadas à população, território, educação, saúde, economia e desenvolvimento humano.
+:::
+
+::: section-card
+## Objetivos
+
+Realizar uma análise exploratória de dados dos municípios do estado de Minas Gerais, utilizando técnicas de estatística descritiva e visualização de dados, com o propósito de identificar padrões, relações e tendências entre indicadores socioeconômicos, financeiros e demográficos, gerando insights que auxiliem na compreensão das características municipais.
+:::
+
+::: section-card
+## Metodologia
+
+A metodologia adotada neste trabalho foi estruturada em etapas de aquisição, tratamento, análise e interpretação dos dados, seguindo os princípios da análise exploratória de dados.
+
+Inicialmente, foi utilizada uma base de dados contendo informações socioeconômicas, financeiras e demográficas dos municípios de Minas Gerais, disponibilizada em formato tabular. Os dados foram importados para o ambiente de análise utilizando a linguagem R, por meio de bibliotecas especializadas em manipulação, visualização e análise estatística.
+
+Na etapa de pré-processamento, realizou-se a limpeza dos dados, incluindo verificação de valores ausentes, padronização de variáveis, tratamento de inconsistências e adequação dos tipos de dados. Posteriormente, foi conduzida uma análise descritiva com o cálculo de medidas resumo, como média, mediana, quartis, valores mínimos e máximos.
+
+Em seguida, foram aplicadas técnicas de visualização de dados para explorar a distribuição das variáveis e investigar possíveis relações entre os indicadores analisados. Para isso, foram utilizados histogramas, boxplots, gráficos de dispersão, matrizes de correlação e outras representações gráficas relevantes.
+
+Por fim, os resultados foram interpretados com foco na identificação de tendências e associações entre os indicadores municipais, permitindo uma compreensão mais aprofundada das características socioeconômicas dos municípios analisados.
+:::
+
+## Visualização e Tratamento de dados
+
+### Banco de Dados
+
+::: section-card
+A base de dados utilizada neste projeto contém informações oficiais sobre os 853 municípios do estado de Minas Gerais, coletadas a partir de dados do Instituto Brasileiro de Geografia e Estatística (IBGE).
+
+O arquivo reúne indicadores socioeconômicos e demográficos importantes para a análise, organizados nas seguintes categorias:
+
+Identificação Local: Códigos de identificação do IBGE, nomes das cidades e as respectivas mesorregiões e microrregiões do estado.
+
+População e Economia: Dados sobre o total de habitantes, a densidade demográfica (habitantes por quilômetro quadrado) e o Produto Interno Bruto (PIB) de cada município.
+
+Desenvolvimento Social: Indicadores de IDH (Índice de Desenvolvimento Humano), taxas de alfabetização e os valores do IDH divididos por educação, longevidade e renda.
+
+Essa estrutura permite cruzar os dados regionais para identificar quais áreas de Minas Gerais apresentam melhores indicadores e quais regiões necessitam de maior atenção em políticas públicas.
+:::
+
+### Carregando Pacotes
+
+::: section-card
+```{r}
+#| echo: TRUE
+library(tidyverse)
+library(readxl)
+library(janitor)
+library(dplyr)
+library(scales)
+library(ggplot2)
+library(kableExtra)
+library(corrplot)
+library(htmltools)
+library(plotly)
+```
+:::
+
+### Visualização de Dados
+
+::: section-card
+```{r}
+df <- read_excel("dados/BaseDadosIBGE_MG.xlsx")
+
+glimpse(df)
+```
+:::
+
+### Tratamento de Dados
+
+::: section-card
+Na etapa de tratamento dos dados, o código realiza a limpeza, a padronização e a validação das informações da base original. Primeiro, os nomes das colunas são padronizados para o formato snake_case e renomeados para termos mais curtos e claros, facilitando a manipulação e eliminando termos técnicos longos do IBGE. Em seguida, na variável de mortalidade infantil, os caracteres que indicavam valores ausentes são substituídos por um formato numérico reconhecido pelo sistema. Por fim, o código calcula de forma independente a densidade demográfica, dividindo a população do último censo pela área territorial, e usa esse valor calculado para corrigir a coluna original caso seja detectada qualquer diferença significativa, garantindo a consistência interna e a precisão dos dados estatísticos analisados.
+:::
+
+::: section-card
+```{r}
+#| echo: TRUE
+df_limpo <- df %>%
+
+ clean_names() %>%
+  rename(
+    municipio = municipio,
+    areaTerritorial_km2 = area_territorial_km2_2025,
+    populacao_ultimoCenso = populacao_no_ultimo_censo_pessoas_2022,
+    densidadeDemografica = densidade_demografica_hab_km2_2022,
+    populacaoEstimada = populacao_estimada_pessoas_2025,
+    escolarizacao_6a14 = escolarizacao_span_6_a_14_anos_span_percent_2022,
+    idhm = idhm_span_indice_de_desenvolvimento_humano_municipal_span_2010,
+    mortalidadeInfantil_obitosPor1000 = mortalidade_infantil_obitos_por_mil_nascidos_vivos_2023,
+    total_ReceitasBrutas = total_de_receitas_brutas_realizadas_r_2024,
+    total_DespesasBrutas = total_de_despesas_brutas_empenhadas_r_2024,
+    pib_percapita = pib_per_capita_r_2023
+    ) %>%
+  
+  mutate(
+    mortalidadeInfantil_obitosPor1000 =
+      mortalidadeInfantil_obitosPor1000 %>%
+      na_if("-") %>%
+      as.numeric()
+  ) %>%
+  
+  mutate(
+    densidade_calculada =
+      populacao_ultimoCenso /
+      areaTerritorial_km2,
+    
+    densidadeDemografica =
+      if_else(
+        abs(
+          densidadeDemografica -
+          densidade_calculada
+        ) > 0.01,
+        round(densidade_calculada, 2),
+        densidadeDemografica
+      )
+  ) %>%
+  
+  select(-densidade_calculada)
+  
+```
+:::
+
+## Análise Descritiva
+
+::: section-card
+```{r}
+resumo <- function(x, nome) {
+  x <- na.omit(x)
+  cv <- sd(x) / mean(x) * 100
+  assimetria <- (mean(x) - median(x)) / sd(x)
+  tibble(
+    Variável         = nome,
+    N                = length(x),
+    Mínimo           = min(x),
+    Q1               = quantile(x, 0.25),
+    Mediana          = median(x),
+    Média            = mean(x),
+    Q3               = quantile(x, 0.75),
+    Máximo           = max(x),
+    `Desv. Padrão`   = sd(x),
+    `CV (%)`         = cv,
+    Assimetria       = assimetria
+  )
+}
+
+bind_rows(
+    resumo(df_limpo$areaTerritorial_km2, "Área (km²)"),
+    resumo(df_limpo$populacao_ultimoCenso, "Pop. Censo 2022"),
+    resumo(df_limpo$densidadeDemografica, "Dens. Demográfica"),
+    resumo(df_limpo$escolarizacao_6a14, "Escolarização (%)"),
+    resumo(df_limpo$idhm, "IDHM"),
+    resumo(df_limpo$mortalidadeInfantil_obitosPor1000, "Mortalidade Infantil"),
+    resumo(df_limpo$pib_percapita, "PIB per capita (R$)")
+  ) %>%
+  
+  kable(digits = 2, 
+        caption = "Medidas resumo com CV e assimetria",
+        booktabs = TRUE, 
+        align = "ccccccccccc", # Centraliza cada uma das 11 colunas
+        format.args = list(big.mark = ".", decimal.mark = ",")) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    position = "center",
+    full_width = FALSE,
+    font_size = 12
+  )
+```
+:::
+
+::: section-card
+A tabela apresenta o resumo estatístico das principais variáveis quantitativas dos municípios de Minas Gerais, exibindo para cada indicador o número total de observações, os valores mínimo e máximo, a média, o desvio padrão e o coeficiente de assimetria. Esta última coluna, correspondente à assimetria, é fundamental para compreender o comportamento e a distribuição dos dados de cada variável, pois valores próximos de zero indicam uma distribuição mais simétrica em torno da média, enquanto valores positivos e elevados revelam uma distribuição com cauda alongada para a direita, o que significa que a maior parte dos municípios se concentra em valores mais baixos daquele indicador, enquanto apenas um grupo restrito de cidades apresenta valores muito altos, puxando a média geral para cima.
+:::
+
+### Histogramas
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(x = escolarizacao_6a14)) +
+  geom_histogram(
+    bins = 10,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    breaks = seq(
+      floor(min(df_limpo$escolarizacao_6a14, na.rm = TRUE)),
+      ceiling(max(df_limpo$escolarizacao_6a14, na.rm = TRUE)),
+      by = 2
+    )
+  ) +
+  labs(
+    title = "Distribuição da Escolarização (6 a 14 anos)",
+    x = "Escolarização (%)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold")
+  )
+```
+
+O histograma possui assimetria à esquerda. A maioria esmagadora dos municípios está concentrada na última faixa (entre 98% e 100%), indicando a quase universalização do ensino nessa idade.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(x = idhm)) +
+  geom_histogram(
+    bins = 10,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    breaks = seq(
+      floor(min(df_limpo$idhm, na.rm = TRUE) * 10) / 10,
+      ceiling(max(df_limpo$idhm, na.rm = TRUE) * 10) / 10,
+      by = 0.05
+    )
+  ) +
+  labs(
+    title = "Distribuição do IDHM",
+    x = "IDHM",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold")
+  )
+```
+
+Apresenta um formato de sino quase simétrico. A maior parte dos municípios se concentra no centro do gráfico (em torno do valor de 0,67), demonstrando um padrão de desenvolvimento médio consistente no estado.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(x = mortalidadeInfantil_obitosPor1000)) +
+  geom_histogram(
+    bins = 10,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Distribuição da Mortalidade Infantil",
+    x = "Óbitos por mil nascidos vivos",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold")
+  )
+```
+
+A distribuição é assimétrica à direita. A concentração principal ocorre nas faixas mais baixas, mas o gráfico possui uma cauda longa que revela a existência de municípios com taxas elevadas.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(x = pib_percapita)) +
+  geom_histogram(
+    bins = 15,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Distribuição do PIB per Capita",
+    x = "PIB per Capita (R$)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+Mostra forte assimetria à direita. A maior barra está no limite inferior, demonstrando que a grande maioria dos municípios mineiros possui um PIB per capita baixo.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(x = areaTerritorial_km2)) +
+  geom_histogram(
+    bins = 15,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Distribuição da Área Territorial dos Municípios",
+    x = "Área Territorial (km²)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+O gráfico apresenta uma distribuição fortemente assimétrica à direita, indicando que a grande maioria dos municípios tem área pequena, concentrando-se nas primeiras faixas do gráfico.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(x = populacao_ultimoCenso)) +
+  geom_histogram(
+    bins = 20,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Distribuição da População (Censo 2022)",
+    x = "População (Habitantes)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+Distribuição com assimetria extrema à direita. Quase todos os 853 municípios de MG têm pequeno porte populacional, gerando um pico único no primeiro intervalo.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(x = densidadeDemografica)) +
+  geom_histogram(
+    bins = 15,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Distribuição da Densidade Demográfica",
+    x = "Densidade Demográfica (hab/km²)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+A distribuição é extremamente assimétrica à direita. Quase todos os municípios se agrupam no primeiro intervalo (baixa densidade), refletindo o perfil de cidades pequenas do interior do estado.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(x = populacaoEstimada)) +
+  geom_histogram(
+    bins = 20,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Distribuição da População Estimada (2025)",
+    x = "População Estimada (Habitantes)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+Segue o exato mesmo padrão populacional do Censo 2022, com assimetria extrema à direita e concentração maciça nas cidades de pequeno porte.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(x = total_ReceitasBrutas)) +
+  geom_histogram(
+    bins = 20,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ",", prefix = "R$ "),
+    breaks = pretty_breaks(n = 6)
+  ) +
+  labs(
+    title = "Distribuição das Receitas Brutas Realizadas",
+    x = "Total de Receitas Brutas (R$)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+Semelhante às despesas, o histograma é altamente concentrado à esquerda. A maior parte das cidades capta valores baixos, evidenciando o abismo orçamentário para as grandes metrópoles.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(x = total_DespesasBrutas)) +
+  geom_histogram(
+    bins = 20,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ",", prefix = "R$ "),
+    breaks = pretty_breaks(n = 6)
+  ) +
+  labs(
+    title = "Distribuição das Despesas Brutas Empenhadas",
+    x = "Total de Despesas Brutas (R$)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+```
+
+Distribuição de assimetria extrema à direita. O pico absoluto nos valores baixos reflete os orçamentos das inúmeras cidades pequenas, enquanto poucas cidades grandes distorcem o eixo x.
+:::
+
+### Boxplots
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(y = escolarizacao_6a14)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    breaks = seq(
+      floor(min(df_limpo$escolarizacao_6a14, na.rm = TRUE)),
+      ceiling(max(df_limpo$escolarizacao_6a14, na.rm = TRUE)),
+      by = 2
+    )
+  ) +
+  labs(
+    title = "Boxplot da Escolarização (6 a 14 anos)",
+    y = "Escolarização (%)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+O boxplot é invertido em relação aos demais, com a mediana encostada no topo (99,2%). Apresenta vários outliers inferiores, representando cidades que não atingiram a universalização do ensino.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(y = idhm)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    breaks = seq(
+      floor(min(df_limpo$idhm, na.rm = TRUE) * 10) / 10,
+      ceiling(max(df_limpo$idhm, na.rm = TRUE) * 10) / 10,
+      by = 0.05
+    )
+  ) +
+  labs(
+    title = "Boxplot do IDHM",
+    y = "IDHM",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+É o boxplot mais bem distribuído e com menor dispersão. A caixa é simétrica ao redor da mediana e existem pouquíssimos outliers (apenas 3 pontinhos fora da curva).
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(y = mortalidadeInfantil_obitosPor1000)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Boxplot da Mortalidade Infantil",
+    y = "Óbitos por mil nascidos vivos",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+Apresenta uma mediana baixa (14,5), mas revela grande dispersão superior. Há muitos outliers (pontos acima do limite), que são os municípios com indicadores de saúde mais críticos.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(y = pib_percapita)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Boxplot do PIB per Capita",
+    y = "PIB per Capita (R$)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+O boxplot possui a caixa compacta na parte inferior do gráfico, com a presença de mais de 80 outliers superiores que indicam cidades excepcionalmente ricas, puxando a média para cima.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(y = areaTerritorial_km2)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Boxplot da Área Territorial dos Municípios",
+    y = "Área Territorial (km²)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+A caixa é achatada próximo à base, com uma mediana baixa (363 km²), e apresenta muitos outliers superiores que representam os poucos municípios com territórios muito extensos.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(y = populacao_ultimoCenso)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Boxplot da População (Censo 2022)",
+    y = "População (Habitantes)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+A visualização do bloco central (50% dos dados) é quase invisível devido à distorção gerada por cerca de 100 outliers populacionais extremos, liderados por Belo Horizonte e outras capitais regionais.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(y = densidadeDemografica)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Boxplot da Densidade Demográfica",
+    y = "Densidade Demográfica (hab/km²)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+Os dados estão quase totalmente colados no eixo inferior. A presença de outliers com densidade altíssima (como a capital) comprime toda a caixa para perto de zero.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(y = populacaoEstimada)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Boxplot da População Estimada (2025)",
+    y = "População Estimada (Habitantes)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+A dispersão e os outliers acompanham o Censo 2022. A mediana populacional baixíssima e a enorme quantidade de outliers superiores espremem a representação visual da caixa.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(y = total_ReceitasBrutas)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ",", prefix = "R$ "),
+    breaks = pretty_breaks(n = 6)
+  ) +
+  labs(
+    title = "Boxplot das Receitas Brutas Realizadas",
+    y = "Total de Receitas Brutas (R$)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+O padrão de dispersão é idêntico ao das despesas. Os pontos discrepantes na parte superior representam a alta arrecadação das grandes metrópoles, o que comprime a mediana da maioria dos municípios no piso do gráfico.
+:::
+
+::: section-card
+```{r}
+ggplot(df_limpo, aes(y = total_DespesasBrutas)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ",", prefix = "R$ "),
+    breaks = pretty_breaks(n = 6)
+  ) +
+  labs(
+    title = "Boxplot das Despesas Brutas Empenhadas",
+    y = "Total de Despesas Brutas (R$)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+O boxplot é severamente comprimido para baixo. Os outliers superiores possuem cifras tão colossais que os dados orçamentários das cidades comuns viram uma linha no fundo do eixo Y.
+:::
+
+## Rankings
+
+::: section-card
+```{r}
+top10_area <- df_limpo %>%
+  slice_max(areaTerritorial_km2, n = 10) %>%
+  select(municipio, areaTerritorial_km2, populacao_ultimoCenso, densidadeDemografica, idhm, pib_percapita) %>%
+  arrange(desc(areaTerritorial_km2))
+
+top10_area %>%
+  mutate(
+    areaTerritorial_km2 = label_comma(big.mark = ".")(round(areaTerritorial_km2, 1)),
+    populacao_ultimoCenso = label_comma(big.mark = ".")(populacao_ultimoCenso),
+    densidadeDemografica = round(densidadeDemografica, 2),
+    pib_percapita = label_dollar(
+      prefix = "R$ ",
+      big.mark = ".",
+      decimal.mark = ","
+    )(round(pib_percapita))
+  ) %>%
+  rename(
+    Município         = municipio,
+    `Área (km²)`      = areaTerritorial_km2,
+    `Pop. 2022`       = populacao_ultimoCenso,
+    `Dens. (hab/km²)` = densidadeDemografica,
+    IDHM              = idhm,
+    `PIB pc (R$)`     = pib_percapita
+  ) %>%
+  kable(
+    caption = "10 municípios com maior área territorial (MG, 2025)",
+    booktabs = TRUE,
+    align = "lrrrrr"
+  ) %>%
+  kable_styling(latex_options = c("hold_position", "scale_down"))
+```
+:::
+
+::: section-card
+```{r}
+top10_area %>%
+  mutate(municipio = fct_reorder(municipio, areaTerritorial_km2)) %>%
+  ggplot(aes(x = municipio, y = areaTerritorial_km2, fill = pib_percapita)) +
+  geom_col(width = 0.7) +
+  scale_fill_gradient(
+    low = "#7AB317",
+    high = "#2A044A",
+    name = "PIB per capita",
+    labels = label_dollar(prefix = "R$ ", big.mark = ".", decimal.mark = ",")
+  ) +
+  scale_y_continuous(labels = label_comma(big.mark = ".")) +
+  coord_flip() +
+  labs(title = "10 Maiores Municípios por Área Territorial",
+       subtitle = "Cor indica PIB per capita — municípios maiores em extensão territorial",
+       x = NULL, 
+       y = "Área (km²)"
+       ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+:::
+
+## Associações e Correlações
+
+### Gráficos
+
+```{r}
+dados_graficos <- df_limpo
+
+config_bolhas <- list(
+  color = ~idhm,
+  colorscale = "Viridis",
+  showscale = TRUE,
+  opacity = 0.8,
+  line = list(color = "white", width = 0.5)
+)
+
+# Configuração de layout 
+layout_padrao <- function(titulo, eixo_x, eixo_y, log_x = FALSE) {
+  list(
+    title = list(text = paste0("<b>", titulo, "</b>"), font = list(size = 18)),
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    xaxis = list(
+      title = paste0("<b>", eixo_x, "</b>"), 
+      gridcolor = "#e5e5e5", 
+      zeroline = FALSE,
+      type = ifelse(log_x, "log", "linear")
+    ),
+    yaxis = list(
+      title = paste0("<b>", eixo_y, "</b>"), 
+      gridcolor = "#e5e5e5", 
+      zeroline = FALSE
+    ),
+    hovermode = "closest"
+  )
+}
+
+# Receitas Brutas x IDHM
+grafico_receita_idhm <- plot_ly(
+  data = dados_graficos,
+  x = ~total_ReceitasBrutas,
+  y = ~idhm,
+  type = "scatter",
+  mode = "markers",
+  size = ~populacaoEstimada,
+  sizes = c(5, 60),
+  marker = config_bolhas,
+  text = ~municipio,
+  hovertemplate = paste0(
+    "<b>%{text}</b><br>",
+    "Receita Bruta: R$ %{x:,.2f}<br>",
+    "IDHM: <b>%{y:.3f}</b><br>",
+    "<extra></extra>"
+  )
+) %>%
+  layout(
+    title = layout_padrao("Relação: Receita Bruta Municipal x IDHM", 
+                          "Total de Receitas Brutas (Escala Logarítmica)", 
+                          "Índice de Desenvolvimento Humano (IDHM)", 
+                          log_x = TRUE)$title,
+    xaxis = layout_padrao("","Receitas Brutas (Escala Logarítmica)(R$)","", log_x = TRUE)$xaxis,
+    yaxis = layout_padrao("","","IDHM")$yaxis,
+    plot_bgcolor = "white", paper_bgcolor = "white"
+  )
+
+# Escolarização x IDHM
+grafico_escolarizacao_idhm <- plot_ly(
+  data = dados_graficos,
+  x = ~escolarizacao_6a14,
+  y = ~idhm,
+  type = "scatter",
+  mode = "markers",
+  size = ~populacaoEstimada,
+  sizes = c(5, 60),
+  marker = config_bolhas,
+  text = ~municipio,
+  hovertemplate = paste0(
+    "<b>%{text}</b><br>",
+    "Taxa de Escolarização: %{x}%<br>",
+    "IDHM: <b>%{y:.3f}</b><br>",
+    "<extra></extra>"
+  )
+) %>%
+  layout(
+    title = layout_padrao("Relação: Escolarização (6 a 14 anos) x IDHM", 
+                          "Taxa de Escolarização (%)", 
+                          "Índice de Desenvolvimento Humano (IDHM)")$title,
+    xaxis = layout_padrao("","Taxa de Escolarização (%)","")$xaxis,
+    yaxis = layout_padrao("","","Índice de Desenvolvimento Humano (IDHM)")$yaxis,
+    plot_bgcolor = "white", paper_bgcolor = "white"
+  )
+
+# IDHM x Mortalidade Infantil
+grafico_idhm_mortalidade <- plot_ly(
+  data = dados_graficos,
+  x = ~idhm,
+  y = ~mortalidadeInfantil_obitosPor1000,
+  type = "scatter",
+  mode = "markers",
+  size = ~populacaoEstimada,
+  sizes = c(5, 60),
+  marker = config_bolhas,
+  text = ~municipio,
+  hovertemplate = paste0(
+    "<b>%{text}</b><br>",
+    "IDHM: <b>%{x:.3f}</b><br>",
+    "Mortalidade Infantil: %{y} óbitos/1000<br>",
+    "<extra></extra>"
+  )
+) %>%
+  layout(
+    title = layout_padrao("O Impacto do IDHM na Mortalidade Infantil", 
+                          "Índice de Desenvolvimento Humano (IDHM)", 
+                          "Mortalidade Infantil (Óbitos por 1000)")$title,
+    xaxis = layout_padrao("","Índice de Desenvolvimento Humano (IDHM)","")$xaxis,
+    yaxis = layout_padrao("","","Mortalidade Infantil (Óbitos por 1000)")$yaxis,
+    plot_bgcolor = "white", paper_bgcolor = "white"
+  )
+```
+
+#### Gráfico - Receita Bruta x IDHM
+
+::: section-card
+```{r}
+browsable(
+  tagList(
+    div(style = "margin-bottom: 50px;", grafico_receita_idhm)
+  )
+)
+```
+
+O cruzamento entre a receita do município e o IDHM mostra que o orçamento ajuda a cidade a se desenvolver, mas esse efeito tem um limite. No início do gráfico, qualquer aumento na arrecadação provoca um salto rápido no IDHM. Porém, conforme as cidades se tornam mais ricas, o índice tende a estabilizar. Isso sinaliza que, a partir de um certo nível financeiro, ter mais dinheiro não garante o avanço social de forma automática; o resultado passa a depender de investimentos bem direcionados em saúde e educação.
+:::
+
+##### Correlação - Receita Bruta x IDHM
+
+::: section-card
+```{r}
+
+par3 <- df_limpo %>%
+  select(total_ReceitasBrutas, idhm) %>%
+  na.omit()
+
+# Calcula os três coeficientes de correlação
+r3    <- cor(par3$total_ReceitasBrutas, par3$idhm, method = "pearson")
+rs3   <- cor(par3$total_ReceitasBrutas, par3$idhm, method = "spearman")
+tau3  <- cor(par3$total_ReceitasBrutas, par3$idhm, method = "kendall")
+
+
+test3 <- cor.test(par3$total_ReceitasBrutas, par3$idhm)
+
+cat("n =", nrow(par3), "\n")
+cat("Pearson  r  =", round(r3,   3), "\n")
+cat("Spearman rs =", round(rs3,  3), "\n")
+cat("Kendall  τ  =", round(tau3, 3), "\n")
+cat("p-valor     =", round(test3$p.value, 4), "\n")
+```
+
+O coeficiente de Pearson obtido (r = 0,271) classifica a associação como fraca, enquanto o Spearman (rₛ = 0,463) eleva-a ao nível moderado. A divergência entre os dois coeficientes evidencia o efeito de valores extremos: municípios de grande porte, como Belo Horizonte e Uberlândia, apresentam receitas muito elevadas em razão da sua população, mas seus IDHMs, embora altos, não são proporcionalmente superiores aos de municípios menores e bem desenvolvidos. O Spearman, ao operar com os postos das observações, não é sensível a essas distâncias absolutas e captura com maior fidelidade a tendência geral de que municípios com maior capacidade fiscal tendem a alcançar melhores indicadores de desenvolvimento humano — relação esperada, uma vez que mais recursos permitem maior investimento em saúde, educação e infraestrutura.
+:::
+
+#### Gráfico - Escolarização x IDHM
+
+::: section-card
+```{r}
+browsable(
+  tagList(
+    div(style = "margin-bottom: 50px;", grafico_escolarizacao_idhm)
+  )
+)
+```
+
+Este gráfico apresenta uma das relações mais claras do estudo. Fica evidente que as cidades que conseguem manter as crianças de 6 a 14 anos na escola são, sem exceção, aquelas que alcançam os maiores níveis de IDHM. O dado confirma que o acesso à educação básica é um fator essencial para o desenvolvimento geral do município.
+:::
+
+##### Correlação - Escolarização x IDHM
+
+::: section-card
+```{r}
+
+par2 <- df_limpo %>%
+  select(escolarizacao_6a14, idhm) %>%
+  na.omit()
+
+# Calcula os três coeficientes de correlação
+r2    <- cor(par2$escolarizacao_6a14, par2$idhm, method = "pearson")
+rs2   <- cor(par2$escolarizacao_6a14, par2$idhm, method = "spearman")
+tau2  <- cor(par2$escolarizacao_6a14, par2$idhm, method = "kendall")
+# Teste de hipótese: H0: rho = 0, a 5% de significância
+test2 <- cor.test(par2$escolarizacao_6a14, par2$idhm)
+
+cat("n =", nrow(par2), "\n")
+cat("Pearson  r  =", round(r2,   3), "\n")
+cat("Spearman rs =", round(rs2,  3), "\n")
+cat("Kendall  τ  =", round(tau2, 3), "\n")
+cat("p-valor     =", round(test2$p.value, 4), "\n")
+```
+
+O resultado obtido para este par é o mais intrigante da análise: o coeficiente de Pearson é praticamente nulo (r = −0,014) e o Spearman confirma ausência de associação (rₛ = −0,089). À primeira vista, parece contraditório que escolarização e desenvolvimento humano não se correlacionem. No entanto, os dados revelam um fenômeno de "efeito de teto": a taxa de escolarização de 6 a 14 anos já ultrapassa 98% em praticamente todos os municípios mineiros, com mediana de 99,3%, o que significa que o acesso à escola nessa faixa etária foi amplamente universalizado no estado. Quando uma variável apresenta variação muito pequena, ela perde capacidade discriminatória e, consequentemente, não consegue estabelecer correlação com nenhuma outra variável — independentemente da relação conceitual entre elas. O valor faz sentido no contexto atual de MG, ainda que não reflita a relação estrutural mais ampla entre educação e desenvolvimento.
+:::
+
+#### Gráfico - IDHM x Mortalidade
+
+::: section-card
+```{r}
+browsable(
+  tagList(
+    div(style = "margin-bottom: 50px;", grafico_idhm_mortalidade)
+  )
+)
+```
+
+O gráfico que combina o IDHM com a mortalidade infantil confirma a tendência esperada: quanto melhor o desenvolvimento humano da cidade, menor é a taxa de mortalidade de crianças. No entanto, existem exceções importantes que quebram essa regra. O município de Ribeirão Vermelho é um exemplo disso: apesar de ter um IDHM considerado alto ($0,700$), a cidade registra uma taxa de mortalidade infantil elevada, o que aponta para falhas específicas nos serviços de saúde local.
+:::
+
+##### Correlação - IDHM x Mortalidade
+
+::: section-card
+```{r}
+# Seleciona apenas as duas variáveis do par e remove linhas com NA.
+# O na.omit() é necessário pois mortalidade infantil tem 294 municípios
+# sem registro (IBGE usa "-" quando o número de nascimentos é muito pequeno).
+par1 <- df_limpo %>%
+  select(idhm, mortalidadeInfantil_obitosPor1000) %>%
+  na.omit()
+
+# Calcula os três coeficientes de correlação
+r1    <- cor(par1$idhm, par1$mortalidadeInfantil_obitosPor1000, method = "pearson")
+rs1   <- cor(par1$idhm, par1$mortalidadeInfantil_obitosPor1000, method = "spearman")
+tau1  <- cor(par1$idhm, par1$mortalidadeInfantil_obitosPor1000, method = "kendall")
+
+
+test1 <- cor.test(par1$idhm, par1$mortalidadeInfantil_obitosPor1000)
+
+cat("n =", nrow(par1), "\n")
+cat("Pearson  r  =", round(r1,   3), "\n")
+cat("Spearman rs =", round(rs1,  3), "\n")
+cat("Kendall  τ  =", round(tau1, 3), "\n")
+cat("p-valor     =", round(test1$p.value, 4), "\n")
+
+```
+
+A correlação negativa fraca (r = −0,238; rₛ = −0,314) confirma a direção esperada: municípios com IDHM mais elevado tendem a registrar menor mortalidade infantil, reflexo de um acesso mais amplo a saneamento básico, serviços de saúde e condições socioeconômicas mais favoráveis. A intensidade contida do coeficiente, porém, merece atenção. Dois fatores explicam a fraqueza da associação: a defasagem temporal de 13 anos entre as fontes (IDHM de 2010 e mortalidade de 2023), que dilui a relação por mudanças ocorridas no período; e a ausência de dados de mortalidade em 294 municípios — cerca de 34% do total —, pois o IBGE omite esse indicador em localidades com poucos nascimentos, onde a taxa seria estatisticamente instável. A análise se baseia, portanto, em 559 municípios. O p-valor confirma que a correlação é estatisticamente significativa a 5%, e o valor encontrado faz sentido no contexto do problema.
+:::
+
+```{r}
+nova_paleta <- c("#2A044A", "#0B2E59", "#0D6759", "#7AB317", "#A0C55F") 
+
+# PIB per capita x IDHM
+grafico_pib_idhm <- plot_ly(
+  data = df_limpo,
+  x = ~pib_percapita,
+  y = ~idhm,
+  type = "scatter",
+  mode = "markers",
+  size = ~populacaoEstimada,
+  sizes = c(6, 60),
+  marker = list(
+    color = ~idhm,
+    colorscale = list(seq(0, 1, length.out = 5), nova_paleta),
+    showscale = TRUE,
+    colorbar = list(title = "<b>IDHM</b>", thickness = 15, len = 0.8),
+    opacity = 0.85,
+    line = list(color = "white", width = 0.8) 
+  ),
+  text = ~municipio,
+  hovertemplate = paste0(
+    "<span style='font-size:16px;'><b>%{text}</b></span><br><br>",
+    "<b>PIB per capita:</b> R$ %{x:,.2f}<br>",
+    "<b>IDHM:</b> %{y:.3f}<br>",
+    "<extra></extra>" 
+  )
+) %>%
+  layout(
+    title = list(text = "<b>Relação: PIB per capita vs. IDHM</b>", font = list(size = 20, color = "#2c3e50"), x = 0.05),
+    xaxis = list(title = "<b>PIB per capita (Escala Logarítmica)</b>", type = "log", gridcolor = "#f4f4f4", zeroline = FALSE),
+    yaxis = list(title = "<b>Índice de Desenvolvimento Humano (IDHM)</b>", gridcolor = "#f4f4f4", zeroline = FALSE),
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    hovermode = "closest",
+    font = list(family = "Helvetica, Arial, sans-serif") 
+  )
+
+# Receitas vs Despesas
+grafico_receita_despesa <- plot_ly(
+  data = df_limpo,
+  x = ~total_ReceitasBrutas,
+  y = ~total_DespesasBrutas,
+  type = "scatter",
+  mode = "markers",
+  size = ~populacaoEstimada,
+  sizes = c(6, 60),
+  marker = list(
+    color = ~idhm,
+    colorscale = list(seq(0, 1, length.out = 5), nova_paleta),
+    showscale = TRUE,
+    colorbar = list(title = "<b>IDHM</b>", thickness = 15, len = 0.8),
+    opacity = 0.85,
+    line = list(color = "white", width = 0.8)
+  ),
+  text = ~municipio,
+  hovertemplate = paste0(
+    "<span style='font-size:16px;'><b>%{text}</b></span><br><br>",
+    "<b>Receita Bruta:</b> R$ %{x:,.2f}<br>",
+    "<b>Despesa Bruta:</b> R$ %{y:,.2f}<br>",
+    "<b>IDHM:</b> %{marker.color:.3f}<br>",
+    "<extra></extra>"
+  )
+) %>%
+  layout(
+    title = list(text = "<b>Visão Financeira: Receitas vs. Despesas Brutas</b>", font = list(size = 20, color = "#2c3e50"), x = 0.05),
+    xaxis = list(title = "<b>Total de Receitas (Escala Logarítmica)</b>", type = "log", gridcolor = "#f4f4f4", zeroline = FALSE),
+    yaxis = list(title = "<b>Total de Despesas (Escala Logarítmica)</b>", type = "log", gridcolor = "#f4f4f4", zeroline = FALSE),
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    hovermode = "closest",
+    font = list(family = "Helvetica, Arial, sans-serif"),
+    shapes = list(
+      list(
+        type = "line",
+        x0 = min(df_limpo$total_ReceitasBrutas, na.rm=TRUE),
+        y0 = min(df_limpo$total_ReceitasBrutas, na.rm=TRUE),
+        x1 = max(df_limpo$total_ReceitasBrutas, na.rm=TRUE),
+        y1 = max(df_limpo$total_ReceitasBrutas, na.rm=TRUE),
+        line = list(color = "#bdc3c7", dash = "dot", width = 2)
+      )
+    )
+  )
+```
+
+#### Gráfico - PIB x IDHM
+
+::: section-card
+```{r}
+browsable(
+  tagList(
+    div(style = "margin-bottom: 60px; padding: 20px; border: 1px solid #eee; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);", grafico_pib_idhm)
+  )
+)
+```
+
+A análise do gráfico mostra que o crescimento econômico ajuda o desenvolvimento humano até certo ponto. No início da curva, nota-se uma relação muito clara: pequenos aumentos no PIB resultam em grandes melhoras no IDHM. No entanto, quando olhamos para as cidades de maior renda, a curva começa a estabilizar. Esse comportamento deixa evidente que, depois que o município garante uma base financeira mínima, o avanço social não acontece mais de forma automática com o crescimento da economia. A partir desse nível, melhorar o IDHM passa a depender diretamente de investimentos focados em saúde e educação.
+:::
+
+##### Correlação - PIB x IDHM
+
+::: section-card
+```{r}
+# Seleciona as duas variáveis. O PIB per capita em MG tem distribuição
+# muito assimétrica: poucos municípios com valores extremamente altos
+# (grandes indústrias/mineradoras em populações pequenas) distorcem
+# o coeficiente de Pearson.
+par4 <- df_limpo %>%
+  select(pib_percapita, idhm) %>%
+  na.omit()
+
+# Calcula os três coeficientes de correlação
+r4    <- cor(par4$pib_percapita, par4$idhm, method = "pearson")
+rs4   <- cor(par4$pib_percapita, par4$idhm, method = "spearman")
+tau4  <- cor(par4$pib_percapita, par4$idhm, method = "kendall")
+
+
+test4 <- cor.test(par4$pib_percapita, par4$idhm)
+
+cat("n =", nrow(par4), "\n")
+cat("Pearson  r  =", round(r4,   3), "\n")
+cat("Spearman rs =", round(rs4,  3), "\n")
+cat("Kendall  τ  =", round(tau4, 3), "\n")
+cat("p-valor     =", round(test4$p.value, 4), "\n")
+```
+
+Este par representa o caso mais revelador da análise, ao demonstrar a importância de se comparar os coeficientes de Pearson e Spearman. O Pearson (r = 0,390) aponta associação fraca/moderada, ao passo que o Spearman (rₛ = 0,702) indica relação\*forte. A discrepância decorre da assimetria extrema do PIB per capita em MG: municípios como Extrema, Catas Altas e Itatiaiuçu registram valores acima de R\$ 300 mil, impulsionados por grandes plantas industriais ou mineradoras instaladas em populações reduzidas. Esses valores extremos distorcem a correlação linear de Pearson, que é sensível a outliers, conforme destacado no material teórico. O Spearman, ao trabalhar apenas com os postos das observações, é imune a essas distâncias absolutas e revela que, em termos de ordenação, municípios mais ricos tendem consistentemente a apresentar IDHM mais alto — uma relação forte e positiva, coerente com o esperado no contexto socioeconômico de Minas Gerais.
+:::
+
+#### Gráfico - Receita x Despesa
+
+::: section-card
+```{r}
+browsable(
+  tagList(
+    div(style = "margin-bottom: 40px; padding: 20px; border: 1px solid #eee; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);", grafico_receita_despesa)
+  )
+)
+```
+
+O gráfico mostra uma linha reta bem definida, onde os dados acompanham quase perfeitamente a linha diagonal. O tamanho das bolhas reflete a grande diferença econômica entre as cidades, mostrando que os grandes municípios movimentam bilhões, enquanto os pequenos têm recursos muito baixos. O ponto mais importante do gráfico é a falta de sobra no orçamento: a quase totalidade das cidades de Minas Gerais opera no limite entre o que arrecada e o que gasta. Essa proximidade com o limite financeiro mostra que as prefeituras não têm margem de manobra ou reserva em caixa, o que deixa a gestão pública muito dependente e vulnerável a qualquer queda na arrecadação.
+:::
+
+##### Correlação - Receitas x Despesas
+
+::: section-card
+```{r}
+# Seleciona as duas variáveis orçamentárias dos municípios.
+# Espera-se correlação muito alta, pois a Lei de Responsabilidade Fiscal
+# exige equilíbrio entre receita e despesa nos municípios brasileiros.
+par5 <- df_limpo %>%
+  select(total_ReceitasBrutas, total_DespesasBrutas) %>%
+  na.omit()
+
+# Calcula os três coeficientes de correlação
+r5    <- cor(par5$total_ReceitasBrutas, par5$total_DespesasBrutas, method = "pearson")
+rs5   <- cor(par5$total_ReceitasBrutas, par5$total_DespesasBrutas, method = "spearman")
+tau5  <- cor(par5$total_ReceitasBrutas, par5$total_DespesasBrutas, method = "kendall")
+
+# Teste de hipótese: H0: rho = 0, a 5% de significância
+test5 <- cor.test(par5$total_ReceitasBrutas, par5$total_DespesasBrutas)
+
+cat("n =", nrow(par5), "\n")
+cat("Pearson  r  =", round(r5,   3), "\n")
+cat("Spearman rs =", round(rs5,  3), "\n")
+cat("Kendall  τ  =", round(tau5, 3), "\n")
+cat("p-valor     =", round(test5$p.value, 4), "\n")
+```
+
+A correlação entre receitas e despesas municipais é muito forte, quase perfeita (r = 0,995; rₛ = 0,982), com plena concordância entre os três coeficientes. Esse resultado é o mais esperado de toda a análise: a Lei de Responsabilidade Fiscal (Lei Complementar nº 101/2000) impõe equilíbrio orçamentário aos municípios brasileiros, estabelecendo limites ao endividamento e vedando gastos sistematicamente superiores à arrecadação. Por força legal, portanto, receita e despesa caminham juntas — municípios que arrecadam mais naturalmente comprometem maior volume de recursos, e na mesma proporção. A quase perfeição da correlação confirma que esse princípio é seguido de forma consistente pela totalidade dos municípios mineiros analisados.
+:::
+
+### Resumo Correlações
+
+::: section-card
+#### Associação entre Variáveis
+
+Para quantificar as relações identificadas nos gráficos anteriores, foram calculados os coeficientes de correlação de Pearson (r), Spearman (rₛ) e Kendall (τ) para cada par de variáveis. O coeficiente de Pearson mede a intensidade da associação linear entre duas variáveis, enquanto Spearman e Kendall trabalham com os postos das observações, sendo mais robustos à presença de valores extremos e à assimetria das distribuições. A força da correlação é classificada segundo o critério adotado na disciplina: correlação **fraca** quando \|r\| \< 0,4; **moderada** quando 0,4 ≤ \|r\| \< 0,7; **forte** quando 0,7 ≤ \|r\| \< 1; e **perfeita** quando \|r\| = 1.
+:::
+
+#### Tabela Resumo
+
+::: section-card
+```{r}
+# Tabela resumo: consolida todos os coeficientes calculados acima
+# em um único quadro, pronto para o relatório.
+tabela_corr <- data.frame(
+  Par = c(
+    "IDHM × Mortalidade Infantil",
+    "Escolarização × IDHM",
+    "Receitas × IDHM",
+    "PIB per capita × IDHM",
+    "Receitas × Despesas"
+  ),
+  n = c(nrow(par1), nrow(par2), nrow(par3), nrow(par4), nrow(par5)),
+  Pearson_r   = round(c(r1, r2, r3, r4, r5), 3),
+  Spearman_rs = round(c(rs1, rs2, rs3, rs4, rs5), 3),
+  Kendall_tau = round(c(tau1, tau2, tau3, tau4, tau5), 3),
+  Forca   = c("Fraca", "Nula", "Fraca/Moderada*", "Moderada/Forte**", "Muito Forte"),
+  Sentido = c("Negativo", "Negativo", "Positivo", "Positivo", "Positivo")
+)
+
+knitr::kable(
+  tabela_corr,
+  col.names = c("Par de Variáveis", "n", "Pearson (r)",
+                "Spearman (rₛ)", "Kendall (τ)", "Força", "Sentido"),
+  caption   = "Resumo dos coeficientes de correlação — municípios de MG",
+  align     = c("l","c","c","c","c","c","c")
+)
+
+```
+
+A tabela consolida os coeficientes calculados para os cinco pares, permitindo uma comparação direta entre a força e o sentido de cada associação.
+
+Pearson fraco (r = 0,271) e Spearman moderado (rₛ = 0,463): municípios populosos distorcem o coeficiente linear.\*
+
+Pearson moderado (r = 0,390) e Spearman forte (rₛ = 0,702): outliers extremos de PIB per capita distorcem o Pearson; o Spearman é o indicador mais adequado para este par.
+
+IDHM × Mortalidade Infantil: A correlação negativa fraca faz sentido: municípios mais desenvolvidos tendem a ter menor mortalidade infantil, por conta de melhor acesso à saúde e saneamento. A fraqueza do coeficiente é explicada pela defasagem de 13 anos entre as fontes (IDHM de 2010, mortalidade de 2023) e pela ausência de dados em municípios pequenos.
+
+Escolarização × IDHM: A correlação nula faz sentido no contexto atual de MG: a escolarização básica já é praticamente universal no estado (mediana de 99,3%), portanto essa variável não discrimina mais os municípios entre si. Não significa que educação e desenvolvimento sejam independentes — significa que esse indicador específico já atingiu seu teto.
+
+Receitas × IDHM: A correlação positiva moderada (pelo Spearman) faz sentido: municípios com maior capacidade fiscal tendem a investir mais em serviços públicos, o que se reflete no IDHM. A relação não é perfeita pois a eficiência do gasto varia muito entre municípios.
+
+PIB per capita × IDHM: A correlação forte (pelo Spearman) faz sentido e é o par mais interessante analiticamente: o Pearson subestima a relação por causa de outliers extremos (municípios com grandes mineradoras ou indústrias), mas o Spearman revela que, em termos de ordem, riqueza e desenvolvimento humano caminham juntos de forma consistente em MG.
+
+Receitas × Despesas: A correlação quase perfeita faz sentido e é totalmente esperada: a Lei de Responsabilidade Fiscal obriga os municípios a manterem equilíbrio orçamentário, fazendo com que receita e despesa sejam, por estrutura legal, praticamente proporcionais.
+
+Com base nos dados da tabela de resumo, é possivel concluir que os valores, no geral, fazem sentido. Os coeficientes encontrados são coerentes com o que se conhece sobre os municípios de Minas Gerais.
+:::
+
+#### Matriz de Correlação Geral
+
+::: section-card
+```{r}
+#| fig-width: 9
+#| fig-height: 8
+
+# Seleciona todas as variáveis numéricas da base para a matriz
+variaveis_num <- df_limpo %>%
+  select(areaTerritorial_km2, populacao_ultimoCenso, densidadeDemografica,
+         escolarizacao_6a14, idhm, mortalidadeInfantil_obitosPor1000,
+         total_ReceitasBrutas, total_DespesasBrutas, pib_percapita)
+
+# use = "pairwise.complete.obs": para cada par usa só as linhas sem NA
+# (necessário por causa dos valores ausentes em mortalidadeInfantil)
+matriz_cor <- cor(variaveis_num, method = "pearson",
+                  use = "pairwise.complete.obs")
+
+# Rótulos curtos para caber no gráfico
+rownames(matriz_cor) <- colnames(matriz_cor) <- c(
+  "Área", "Pop. Censo", "Densidade", "Escolariz.",
+  "IDHM", "Mort. Inf.", "Receitas", "Despesas", "PIB pc"
+)
+
+# Paleta personalizada usando as cores do grupo
+# Correlação negativa → roxo/azul escuro | zero → branco | positiva → verde
+paleta_matriz <- colorRampPalette(c("#29044a", "#0b2e58", "#ffffff",
+                                     "#7ab318", "#a0c55e"))(200)
+
+
+corrplot(matriz_cor,
+         method      = "color",
+         type        = "upper",
+         addCoef.col = "black",
+         number.cex  = 0.75,
+         tl.col      = "black",
+         tl.srt      = 45,
+         col         = paleta_matriz,
+         mar         = c(0, 0, 2, 0),
+         title       = "Matriz de Correlação de Pearson — Municípios de MG")
+```
+
+A matriz de correlação de Pearson entre todas as variáveis numéricas da base amplia a perspectiva da análise e permite identificar associações que não foram exploradas individualmente. A quase colinearidade entre receitas e despesas (r ≈ 1,00) é confirmada visualmente como a relação mais intensa de toda a base. O IDHM apresenta correlação moderada apenas com o PIB per capita, e fraca com as demais variáveis, indicando que o desenvolvimento humano municipal em MG é um fenômeno multidimensional que nenhuma variável econômica isolada consegue explicar com plenitude. A baixa correlação linear do PIB per capita com as demais variáveis reforça o impacto dos outliers extremos já discutido, que comprometem o coeficiente de Pearson nessa variável.
+:::
+
+::: section-card
+## Conclusão
+
+A Análise Exploratória de Dados dos 853 municípios de Minas Gerais apresenta um cenário territorial com fortes assimetrias demográficas e econômicas. A avaliação conjunta dos indicadores levanta algumas hipóteses importantes sobre a dinâmica de desenvolvimento do estado:
+
+Concentração de População e Recursos:
+
+A análise descritiva mostra uma forte assimetria na maioria das variáveis (como População, PIB per capita, Receitas e Despesas). Isso sugere que a base do estado é formada por muitos municípios pequenos e com arrecadação limitada. Por outro lado, observa-se que poucos polos econômicos concentram grande parte da riqueza, o que parece puxar as médias estaduais para cima e criar distorções na distribuição geral.
+
+Hipótese do Teto de Crescimento Econômico no Social:
+
+O cruzamento das variáveis financeiras (como o PIB per capita) com o IDHM indica uma correlação positiva, porém não linear. A hipótese levantada pelos gráficos é que o aumento financeiro impulsiona o desenvolvimento humano de forma rápida nos estágios iniciais. No entanto, nas cidades mais ricas, essa curva tende a se estabilizar. Esse comportamento sugere que o alto volume de recursos, isoladamente, pode não garantir melhorias contínuas na qualidade de vida, apontando para a possível necessidade de uma gestão mais focada em políticas sociais a partir de certo patamar financeiro.
+
+Indícios de Orçamentos Restritos:
+
+A correlação quase perfeita entre Receitas e Despesas Brutas pode ser interpretada como um reflexo do cumprimento da Lei de Responsabilidade Fiscal. Contudo, na prática, essa linearidade forte levanta a hipótese de que a esmagadora maioria das prefeituras opera no limite de seus orçamentos. O uso de quase toda a arrecadação para cobrir gastos e obrigações legais pode indicar que as administrações locais possuem pouca margem financeira para realizar novos investimentos de forma autônoma.
+
+Escolarização e Dinâmicas de Saúde:
+
+Os dados mostram que a taxa de escolarização de 6 a 14 anos está praticamente universalizada na maior parte do estado (mediana de 99,3%), criando um "efeito de teto" nos modelos estatísticos. Na área da saúde, a relação entre IDHM e Mortalidade Infantil acompanha a tendência de que um maior desenvolvimento reduz a mortalidade. Porém, a presença de municípios com IDHM razoável e mortalidade elevada levanta a hipótese de que existem desafios locais específicos na gestão da saúde, enquanto regiões com números muito baixos podem estar sofrendo com possíveis subnotificações nos registros do governo.
+
+Em síntese, a exploração inicial dos dados sugere que os desafios de Minas Gerais vão além da geração de riqueza, passando possivelmente pela forma como os recursos são distribuídos e convertidos em bem-estar. A superação das desigualdades parece demandar políticas que considerem a realidade dos municípios menores, que operam com orçamentos ajustados e podem necessitar de apoio para sustentar o avanço do seu desenvolvimento humano a longo prazo.
+:::
+
+::: section-card
+## Referências
+
+WICKHAM, H. et al. Welcome to the tidyverse. Journal of Open Source Software, 2019. WICKHAM, H. ggplot2: Elegant Graphics for Data Analysis. Springer, 2016. SIEVERT, C. Interactive Web-Based Data Visualization with R, plotly, and shiny. CRC Press, 2020. POSIT SOFTWARE, PBC. Quarto Documentation. Disponível em: Quarto Documentation. Acesso em: 22 jun. 2026.
+
+R Core Team (2026). *R: A Language and Environment for Statistical Computing*. R Foundation for Statistical Computing, Vienna, Austria. doi:10.32614/R.manuals <https://doi.org/10.32614/R.manuals>. <https://www.R-project.org/>.
+:::

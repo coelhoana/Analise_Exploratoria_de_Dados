@@ -1,0 +1,1477 @@
+---
+title: "Análise Exploratória dos Municípios de MG"
+author: "Ana Luiza, Carolina, Samara, Tainá"
+date: today
+
+format:
+  dashboard:
+    theme: flatly
+    orientation: columns
+    code-overflow: scroll
+
+editor: visual
+
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{=html}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap');
+
+.scroll-code div.sourceCode {
+  overflow-y: auto !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Lora", serif;
+}
+
+body {
+  background-color: #0B2E59; 
+  font-family: "Source Sans 3", sans-serif;
+  color: #ffffff;
+}
+
+/* Header */
+.quarto-dashboard #quarto-dashboard-header .navbar .navbar-container {
+  background-color: #0B2130;    
+  color: #DCF0F8;              
+  padding: 8px 20px;          
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
+  border-bottom: 2px solid #DCF0F8; 
+  
+}
+
+/* Título do dashboard */
+.quarto-dashboard #quarto-dashboard-header .navbar .navbar-title a {
+  color: #DCF0F8;              
+  font-size: 24px;             
+  font-weight: bold;           
+  text-transform: uppercase;   
+}
+
+/*  Abas do menu  */
+.quarto-dashboard #quarto-dashboard-header .navbar .navbar-container .navbar-nav a {
+  color: #DCF0F8;              
+  text-decoration: none;       
+  padding: 6px 12px;           
+  font-weight: 600;            
+  margin-right: 25px;
+}
+
+/* Aba selecionada */
+.quarto-dashboard #quarto-dashboard-header .navbar .navbar-container .navbar-nav .nav-link.active,
+.quarto-dashboard #quarto-dashboard-header .navbar .navbar-container .navbar-nav .nav-link[aria-current="page"] {
+  background-color: #DCF0F8 !important;
+  color: #0B2130 !important;
+  font-weight: 700;
+}
+
+/* Hover das abas  */
+.quarto-dashboard #quarto-dashboard-header .navbar .navbar-container .navbar-nav a:hover {
+  color: #DCF0F8;              
+  background-color: rgba(255,255,255,0.1); 
+  border-radius: 5px;          
+}
+
+/*  Links das abas dos cards  */
+a.nav-link {
+  color: #0F3045;            
+  font-weight: 600;           
+  text-decoration: none;      
+  padding: 6px 12px;          
+  border-radius: 5px;
+}
+
+/*  Hover dos links das abas dos cards  */
+a.nav-link:hover {
+  color: #1E6085;             
+  background-color: rgba(255,255,255,0.1);
+}
+
+/* Value Boxes */
+.bslib-value-box {
+  border-radius: 12px !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+}
+
+/* Hover */
+.bslib-value-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+/* Título */
+.value-box-title {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: #0B538E !important;
+}
+
+/* Valor */
+.value-box-value {
+  font-size: 2.6rem !important;
+  font-weight: 700 !important;
+  color: #0B538E !important;
+}
+
+/* Ícone */
+.value-box-showcase {
+  opacity: 0.9;
+  transform: scale(1.15);
+}
+
+/* Corpo do card */
+.value-box .value-box-grid {
+  padding: 1rem;
+}
+
+/* Introdução */
+.bloco-intro {
+    font-size: 20px;        
+    text-align: justify;
+    line-height: 1.6;       
+    color: #333333;         
+    padding: 15px;          
+    border-left: 5px solid #0F3045; 
+    border-radius: 5px;
+}
+
+/* Conclusão */
+.bloco-conclusao {
+    font-size: 20px;        
+    text-align: justify;
+    line-height: 1.6;      
+    color: #333333;         
+    padding: 15px;          
+    border-left: 8px solid #0F3045; 
+    height: auto;
+    overflow-y: auto;   
+    border-radius: 5px;
+}
+</style>
+```
+
+## Carregando pacotes e o Banco de Dados
+
+```{r}
+library(bslib)
+library(bsicons)
+library(readxl)
+library(tidyverse)
+library(readxl)
+library(janitor)
+library(dplyr)
+library(scales)
+library(ggplot2)
+library(kableExtra)
+library(corrplot)
+library(geobr)
+library(leaflet)
+library(sf)
+library(htmltools)
+library(plotly)
+
+df <- read_excel("dados/BaseDadosIBGE_MG.xlsx")
+```
+
+# Informações Gerais
+
+## Introdução
+
+### Boxes {height="30%"}
+
+```{r}
+cidadesTotais <- df %>%
+  summarise(`Município [-]` = n(), .groups = "drop")
+
+value_box(
+  title = "Número de Municipios",
+  value = cidadesTotais,
+  showcase = bsicons::bs_icon("geo-alt"),
+  theme = value_box_theme(bg = "#e6f2fd", fg = "#0B538E"),
+  class = "border"
+)
+```
+
+```{r}
+mediaIDHM <- df %>%
+  summarise(media = mean(`IDHM <span>Índice de desenvolvimento humano municipal</span> [2010]`, 
+                         na.rm = TRUE))
+
+value_box(
+  title = "Média do IDHM",
+  value = round(mediaIDHM, 3),
+  showcase = bsicons::bs_icon("people"),
+  theme = value_box_theme(bg = "#e6f2fd", fg = "#0B538E"),
+  class = "border"
+)
+```
+
+```{r}
+mediaMortalidade <- df %>%
+  mutate(
+    `Mortalidade infantil - óbitos por mil nascidos vivos [2023]` =
+      `Mortalidade infantil - óbitos por mil nascidos vivos [2023]` %>%
+      na_if("-") %>%
+      as.numeric()
+  ) %>%
+  summarise(media = mean(`Mortalidade infantil - óbitos por mil nascidos vivos [2023]`, 
+                         na.rm = TRUE)) 
+
+value_box(
+  title = "Média da Mortalidade Infantil",
+  value = round(mediaMortalidade, 2),
+  showcase = bsicons::bs_icon("heart-pulse"),
+  theme = value_box_theme(bg = "#e6f2fd", fg = "#0B538E"),
+  class = "border"
+)
+```
+
+```{r}
+mediaPIB <- df %>%
+  summarise(media = mean(`PIB per capita - R$ [2023]`, na.rm = TRUE))
+
+value_box(
+  title = "Média do PIB",
+  value = round(mediaPIB, 2),
+  showcase = bsicons::bs_icon("cash-coin"),
+  theme = value_box_theme(bg = "#e6f2fd", fg = "#0B538E"),
+  class = "border"
+)
+```
+
+### Texto {height="70%"}
+::: bloco-intro
+Minas Gerais é o segundo estado mais populoso do Brasil e possui 853 municípios, sendo o estado com o maior número de municípios do país. Essa grande diversidade entre as cidades permite analisar diferentes realidades socioeconômicas presentes no território mineiro. Enquanto municípios como Belo Horizonte e Uberlândia apresentam maior concentração populacional e econômica, muitas cidades de menor porte, principalmente nas regiões norte e noroeste do estado, enfrentam desafios relacionados ao desenvolvimento humano e à infraestrutura.
+
+Este relatório apresenta uma Análise Exploratória de Dados (EDA) utilizando indicadores municipais de Minas Gerais disponibilizados pelo IBGE. Foram analisadas variáveis relacionadas à população, território, educação, saúde, economia e desenvolvimento humano. O objetivo é identificar padrões, observar diferenças entre os municípios e compreender possíveis relações entre os indicadores analisados.
+:::
+# Tratamento
+
+## Coluna 1 {width="50%"}
+
+### Visualização dos dados
+
+```{r}
+glimpse(df)
+```
+
+## Coluna 2 {width="50%"}
+
+### Tratamento de Dados {.scroll-code}
+
+```{r}
+#| echo: TRUE
+df_limpo <- df %>%
+
+ clean_names() %>%
+  rename(
+    municipio = municipio,
+    areaTerritorial_km2 = area_territorial_km2_2025,
+    populacao_ultimoCenso = populacao_no_ultimo_censo_pessoas_2022,
+    densidadeDemografica = densidade_demografica_hab_km2_2022,
+    populacaoEstimada = populacao_estimada_pessoas_2025,
+    escolarizacao_6a14 = escolarizacao_span_6_a_14_anos_span_percent_2022,
+    idhm = idhm_span_indice_de_desenvolvimento_humano_municipal_span_2010,
+    mortalidadeInfantil_obitosPor1000 = mortalidade_infantil_obitos_por_mil_nascidos_vivos_2023,
+    total_ReceitasBrutas = total_de_receitas_brutas_realizadas_r_2024,
+    total_DespesasBrutas = total_de_despesas_brutas_empenhadas_r_2024,
+    pib_percapita = pib_per_capita_r_2023
+    ) %>%
+  
+  # 2. Tratar mortalidade infantil
+  mutate(
+    mortalidadeInfantil_obitosPor1000 =
+      mortalidadeInfantil_obitosPor1000 %>%
+      na_if("-") %>%
+      as.numeric()
+  ) %>%
+  
+  # 3. Corrigir densidade demográfica
+  mutate(
+    densidade_calculada =
+      populacao_ultimoCenso /
+      areaTerritorial_km2,
+    
+    densidadeDemografica =
+      if_else(
+        abs(
+          densidadeDemografica -
+          densidade_calculada
+        ) > 0.01,
+        round(densidade_calculada, 2),
+        densidadeDemografica
+      )
+  ) %>%
+  
+  select(-densidade_calculada)
+  
+```
+
+# Analise Descritiva I
+
+## Tabela Resumo
+### Medidas Resumo
+```{r}
+resumo <- function(x, nome) {
+  x <- na.omit(x)
+  cv <- sd(x) / mean(x) * 100
+  assimetria <- (mean(x) - median(x)) / sd(x)
+  tibble(
+    Variável         = nome,
+    N                = length(x),
+    Mínimo           = min(x),
+    Q1               = quantile(x, 0.25),
+    Mediana          = median(x),
+    Média            = mean(x),
+    Q3               = quantile(x, 0.75),
+    Máximo           = max(x),
+    `Desv. Padrão`   = sd(x),
+    `CV (%)`         = cv,
+    Assimetria       = assimetria
+  )
+}
+
+bind_rows(
+  resumo(df_limpo$areaTerritorial_km2, "Área (km²)"),
+  resumo(df_limpo$populacao_ultimoCenso, "Pop. Censo 2022"),
+  resumo(df_limpo$densidadeDemografica, "Dens. Demográfica"),
+  resumo(df_limpo$escolarizacao_6a14, "Escolarização (%)"),
+  resumo(df_limpo$idhm, "IDHM"),
+  resumo(df_limpo$mortalidadeInfantil_obitosPor1000, "Mortalidade Infantil"),
+  resumo(df_limpo$pib_percapita, "PIB per capita (R$)")
+) |>
+  kable(digits = 2, caption = "Medidas resumo com CV e assimetria",
+        booktabs = TRUE, format.args = list(big.mark = ".")) |>
+  kable_styling(latex_options = c("hold_position", "scale_down"), font_size = 8)
+```
+
+# Análise Descritiva II
+## Gráficos
+ 
+### Boxplots {.tabset}
+
+#### Escolarização
+```{r}
+ggplot(df_limpo, aes(y = escolarizacao_6a14)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    breaks = seq(
+      floor(min(df_limpo$escolarizacao_6a14, na.rm = TRUE)),
+      ceiling(max(df_limpo$escolarizacao_6a14, na.rm = TRUE)),
+      by = 2
+    )
+  ) +
+  labs(
+    title = "Boxplot da Escolarização (6 a 14 anos)",
+    y = "Escolarização (%)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+#### IDHM
+```{r}
+ggplot(df_limpo, aes(y = idhm)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    breaks = seq(
+      floor(min(df_limpo$idhm, na.rm = TRUE) * 10) / 10,
+      ceiling(max(df_limpo$idhm, na.rm = TRUE) * 10) / 10,
+      by = 0.05
+    )
+  ) +
+  labs(
+    title = "Boxplot do IDHM",
+    y = "IDHM",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+#### Mortalidade Infantil
+```{r}
+ggplot(df_limpo, aes(y = mortalidadeInfantil_obitosPor1000)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Boxplot da Mortalidade Infantil",
+    y = "Óbitos por mil nascidos vivos",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+#### PIB per Capita
+```{r}
+ggplot(df_limpo, aes(y = pib_percapita)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Boxplot do PIB per Capita",
+    y = "PIB per Capita (R$)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+#### Área Territorial
+```{r}
+ggplot(df_limpo, aes(y = areaTerritorial_km2)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Boxplot da Área Territorial dos Municípios",
+    y = "Área Territorial (km²)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+#### População Censo
+```{r}
+ggplot(df_limpo, aes(y = populacao_ultimoCenso)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Boxplot da População (Censo 2022)",
+    y = "População (Habitantes)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+#### Densidade Demográfica
+```{r}
+ggplot(df_limpo, aes(y = densidadeDemografica)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Boxplot da Densidade Demográfica",
+    y = "Densidade Demográfica (hab/km²)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+#### População Estimada
+```{r}
+ggplot(df_limpo, aes(y = populacaoEstimada)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Boxplot da População Estimada (2025)",
+    y = "População Estimada (Habitantes)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+#### Receitas Brutas
+```{r}
+ggplot(df_limpo, aes(y = total_ReceitasBrutas)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ",", prefix = "R$ "),
+    breaks = pretty_breaks(n = 6)
+  ) +
+  labs(
+    title = "Boxplot das Receitas Brutas Realizadas",
+    y = "Total de Receitas Brutas (R$)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+#### Despesas Brutas
+```{r}
+ggplot(df_limpo, aes(y = total_DespesasBrutas)) +
+  geom_boxplot(
+    fill = "#5A84B3",
+    color = "#1F4E79",
+    alpha = 0.8,
+    width = 0.5
+  ) +
+  scale_y_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ",", prefix = "R$ "),
+    breaks = pretty_breaks(n = 6)
+  ) +
+  labs(
+    title = "Boxplot das Despesas Brutas Empenhadas",
+    y = "Total de Despesas Brutas (R$)",
+    x = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+## Histogramas {.tabset}
+
+### Escolarização
+```{r}
+ggplot(df_limpo, aes(x = escolarizacao_6a14)) +
+  geom_histogram(
+    bins = 10,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    breaks = seq(
+      floor(min(df_limpo$escolarizacao_6a14, na.rm = TRUE)),
+      ceiling(max(df_limpo$escolarizacao_6a14, na.rm = TRUE)),
+      by = 2
+    )
+  ) +
+  labs(
+    title = "Distribuição da Escolarização (6 a 14 anos)",
+    x = "Escolarização (%)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold")
+  )
+```
+
+### IDHM
+
+```{r}
+ggplot(df_limpo, aes(x = idhm)) +
+  geom_histogram(
+    bins = 10,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    breaks = seq(
+      floor(min(df_limpo$idhm, na.rm = TRUE) * 10) / 10,
+      ceiling(max(df_limpo$idhm, na.rm = TRUE) * 10) / 10,
+      by = 0.05
+    )
+  ) +
+  labs(
+    title = "Distribuição do IDHM",
+    x = "IDHM",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold")
+  )
+```
+
+### Mortalidade Infantil
+
+```{r}
+ggplot(df_limpo, aes(x = mortalidadeInfantil_obitosPor1000)) +
+  geom_histogram(
+    bins = 10,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Distribuição da Mortalidade Infantil",
+    x = "Óbitos por mil nascidos vivos",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold")
+  )
+```
+
+### PIB per Capita
+
+```{r}
+ggplot(df_limpo, aes(x = pib_percapita)) +
+  geom_histogram(
+    bins = 15,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Distribuição do PIB per Capita",
+    x = "PIB per Capita (R$)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+### Área Territorial
+```{r}
+ggplot(df_limpo, aes(x = areaTerritorial_km2)) +
+  geom_histogram(
+    bins = 15,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Distribuição da Área Territorial dos Municípios",
+    x = "Área Territorial (km²)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+### População Censo
+```{r}
+ggplot(df_limpo, aes(x = populacao_ultimoCenso)) +
+  geom_histogram(
+    bins = 20,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Distribuição da População (Censo 2022)",
+    x = "População (Habitantes)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+### Densidade Demográfica
+```{r}
+ggplot(df_limpo, aes(x = densidadeDemografica)) +
+  geom_histogram(
+    bins = 15,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Distribuição da Densidade Demográfica",
+    x = "Densidade Demográfica (hab/km²)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+### População Estimada
+```{r}
+ggplot(df_limpo, aes(x = populacaoEstimada)) +
+  geom_histogram(
+    bins = 20,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ","),
+    breaks = pretty_breaks(n = 8)
+  ) +
+  labs(
+    title = "Distribuição da População Estimada (2025)",
+    x = "População Estimada (Habitantes)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+### Receitas Brutas
+```{r}
+ggplot(df_limpo, aes(x = total_ReceitasBrutas)) +
+  geom_histogram(
+    bins = 20,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ",", prefix = "R$ "),
+    breaks = pretty_breaks(n = 6)
+  ) +
+  labs(
+    title = "Distribuição das Receitas Brutas Realizadas",
+    x = "Total de Receitas Brutas (R$)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+### Despesas Brutas
+```{r}
+ggplot(df_limpo, aes(x = total_DespesasBrutas)) +
+  geom_histogram(
+    bins = 20,
+    fill = "#7AB317",
+    color = "black",
+    alpha = 0.8
+  ) +
+  scale_x_continuous(
+    labels = label_number(big.mark = ".", decimal.mark = ",", prefix = "R$ "),
+    breaks = pretty_breaks(n = 6)
+  ) +
+  labs(
+    title = "Distribuição das Despesas Brutas Empenhadas",
+    x = "Total de Despesas Brutas (R$)",
+    y = "Quantidade de Municípios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold",
+      size = 14
+    ),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+```
+
+# Rankings
+
+## Municípios com Maior Área Territorial
+```{r}
+top10_area <- df_limpo %>%
+  slice_max(areaTerritorial_km2, n = 10) %>%
+  select(municipio, areaTerritorial_km2, populacao_ultimoCenso, densidadeDemografica, idhm, pib_percapita) %>%
+  arrange(desc(areaTerritorial_km2))
+
+top10_area %>%
+  mutate(
+    areaTerritorial_km2 = label_comma(big.mark = ".")(round(areaTerritorial_km2, 1)),
+    populacao_ultimoCenso = label_comma(big.mark = ".")(populacao_ultimoCenso),
+    densidadeDemografica = round(densidadeDemografica, 2),
+    pib_percapita = label_dollar(
+      prefix = "R$ ",
+      big.mark = ".",
+      decimal.mark = ","
+    )(round(pib_percapita))
+  ) %>%
+  rename(
+    Município         = municipio,
+    `Área (km²)`      = areaTerritorial_km2,
+    `Pop. 2022`       = populacao_ultimoCenso,
+    `Dens. (hab/km²)` = densidadeDemografica,
+    IDHM              = idhm,
+    `PIB pc (R$)`     = pib_percapita
+  ) %>%
+  kable(
+    caption = "10 municípios com maior área territorial (MG, 2025)",
+    booktabs = TRUE,
+    align = "lrrrrr"
+  ) %>%
+  kable_styling(latex_options = c("hold_position", "scale_down"))
+```
+
+## Ranking das Maiores Áres com PIB
+```{r}
+top10_area %>%
+  mutate(municipio = fct_reorder(municipio, areaTerritorial_km2)) %>%
+  ggplot(aes(x = municipio, y = areaTerritorial_km2, fill = pib_percapita)) +
+  geom_col(width = 0.7) +
+  scale_fill_gradient(
+    low = "#7AB317",
+    high = "#2A044A",
+    name = "PIB per capita",
+    labels = label_dollar(prefix = "R$ ", big.mark = ".", decimal.mark = ",")
+  ) +
+  scale_y_continuous(labels = label_comma(big.mark = ".")) +
+  coord_flip() +
+  labs(title = "10 Maiores Municípios por Área Territorial",
+       subtitle = "Cor indica PIB per capita — municípios maiores em extensão territorial",
+       x = NULL, 
+       y = "Área (km²)"
+       ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
+# Associações
+
+## Pares de associações {.tabset}
+
+### Receita Bruta x IDHM {.tabset}
+
+#### Gráfico
+```{r}
+dados_graficos <- df_limpo
+
+config_bolhas <- list(
+  color = ~idhm,
+  colorscale = "Viridis",
+  showscale = TRUE,
+  opacity = 0.8,
+  line = list(color = "white", width = 0.5)
+)
+
+# Configuração de layout 
+layout_padrao <- function(titulo, eixo_x, eixo_y, log_x = FALSE) {
+  list(
+    title = list(text = paste0("<b>", titulo, "</b>"), font = list(size = 18)),
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    xaxis = list(
+      title = paste0("<b>", eixo_x, "</b>"), 
+      gridcolor = "#e5e5e5", 
+      zeroline = FALSE,
+      type = ifelse(log_x, "log", "linear")
+    ),
+    yaxis = list(
+      title = paste0("<b>", eixo_y, "</b>"), 
+      gridcolor = "#e5e5e5", 
+      zeroline = FALSE
+    ),
+    hovermode = "closest"
+  )
+}
+
+# Receitas Brutas x IDHM
+grafico_receita_idhm <- plot_ly(
+  data = dados_graficos,
+  x = ~total_ReceitasBrutas,
+  y = ~idhm,
+  type = "scatter",
+  mode = "markers",
+  size = ~populacaoEstimada,
+  sizes = c(5, 60),
+  marker = config_bolhas,
+  text = ~municipio,
+  hovertemplate = paste0(
+    "<b>%{text}</b><br>",
+    "Receita Bruta: R$ %{x:,.2f}<br>",
+    "IDHM: <b>%{y:.3f}</b><br>",
+    "<extra></extra>"
+  )
+) %>%
+  layout(
+    title = layout_padrao("Relação: Receita Bruta Municipal x IDHM", 
+                          "Total de Receitas Brutas (Escala Logarítmica)", 
+                          "Índice de Desenvolvimento Humano (IDHM)", 
+                          log_x = TRUE)$title,
+    xaxis = layout_padrao("","Receitas Brutas (Escala Logarítmica)(R$)","", log_x = TRUE)$xaxis,
+    yaxis = layout_padrao("","","IDHM")$yaxis,
+    plot_bgcolor = "white", paper_bgcolor = "white"
+  )
+
+# Escolarização x IDHM
+grafico_escolarizacao_idhm <- plot_ly(
+  data = dados_graficos,
+  x = ~escolarizacao_6a14,
+  y = ~idhm,
+  type = "scatter",
+  mode = "markers",
+  size = ~populacaoEstimada,
+  sizes = c(5, 60),
+  marker = config_bolhas,
+  text = ~municipio,
+  hovertemplate = paste0(
+    "<b>%{text}</b><br>",
+    "Taxa de Escolarização: %{x}%<br>",
+    "IDHM: <b>%{y:.3f}</b><br>",
+    "<extra></extra>"
+  )
+) %>%
+  layout(
+    title = layout_padrao("Relação: Escolarização (6 a 14 anos) x IDHM", 
+                          "Taxa de Escolarização (%)", 
+                          "Índice de Desenvolvimento Humano (IDHM)")$title,
+    xaxis = layout_padrao("","Taxa de Escolarização (%)","")$xaxis,
+    yaxis = layout_padrao("","","Índice de Desenvolvimento Humano (IDHM)")$yaxis,
+    plot_bgcolor = "white", paper_bgcolor = "white"
+  )
+
+# IDHM x Mortalidade Infantil
+grafico_idhm_mortalidade <- plot_ly(
+  data = dados_graficos,
+  x = ~idhm,
+  y = ~mortalidadeInfantil_obitosPor1000,
+  type = "scatter",
+  mode = "markers",
+  size = ~populacaoEstimada,
+  sizes = c(5, 60),
+  marker = config_bolhas,
+  text = ~municipio,
+  hovertemplate = paste0(
+    "<b>%{text}</b><br>",
+    "IDHM: <b>%{x:.3f}</b><br>",
+    "Mortalidade Infantil: %{y} óbitos/1000<br>",
+    "<extra></extra>"
+  )
+) %>%
+  layout(
+    title = layout_padrao("O Impacto do IDHM na Mortalidade Infantil", 
+                          "Índice de Desenvolvimento Humano (IDHM)", 
+                          "Mortalidade Infantil (Óbitos por 1000)")$title,
+    xaxis = layout_padrao("","Índice de Desenvolvimento Humano (IDHM)","")$xaxis,
+    yaxis = layout_padrao("","","Mortalidade Infantil (Óbitos por 1000)")$yaxis,
+    plot_bgcolor = "white", paper_bgcolor = "white"
+  )
+```
+
+```{r}
+browsable(
+  tagList(
+    div(style = "margin-bottom: 50px;", grafico_receita_idhm)
+  )
+)
+```
+
+#### Correlação
+```{r}
+
+par3 <- df_limpo %>%
+  select(total_ReceitasBrutas, idhm) %>%
+  na.omit()
+
+# Calcula os três coeficientes de correlação
+r3    <- cor(par3$total_ReceitasBrutas, par3$idhm, method = "pearson")
+rs3   <- cor(par3$total_ReceitasBrutas, par3$idhm, method = "spearman")
+tau3  <- cor(par3$total_ReceitasBrutas, par3$idhm, method = "kendall")
+
+
+test3 <- cor.test(par3$total_ReceitasBrutas, par3$idhm)
+
+cat("n =", nrow(par3), "\n")
+cat("Pearson  r  =", round(r3,   3), "\n")
+cat("Spearman rs =", round(rs3,  3), "\n")
+cat("Kendall  τ  =", round(tau3, 3), "\n")
+cat("p-valor     =", round(test3$p.value, 4), "\n")
+```
+
+### Escolarização x IDHM {.tabset}
+
+#### Gráfico
+```{r}
+browsable(
+  tagList(
+    div(style = "margin-bottom: 50px;", grafico_escolarizacao_idhm)
+  )
+)
+```
+
+#### Correlação
+```{r}
+
+par2 <- df_limpo %>%
+  select(escolarizacao_6a14, idhm) %>%
+  na.omit()
+
+# Calcula os três coeficientes de correlação
+r2    <- cor(par2$escolarizacao_6a14, par2$idhm, method = "pearson")
+rs2   <- cor(par2$escolarizacao_6a14, par2$idhm, method = "spearman")
+tau2  <- cor(par2$escolarizacao_6a14, par2$idhm, method = "kendall")
+# Teste de hipótese: H0: rho = 0, a 5% de significância
+test2 <- cor.test(par2$escolarizacao_6a14, par2$idhm)
+
+cat("n =", nrow(par2), "\n")
+cat("Pearson  r  =", round(r2,   3), "\n")
+cat("Spearman rs =", round(rs2,  3), "\n")
+cat("Kendall  τ  =", round(tau2, 3), "\n")
+cat("p-valor     =", round(test2$p.value, 4), "\n")
+```
+
+### IDHM x Mortalidade {.tabset}
+
+#### Gráfico
+```{r}
+browsable(
+  tagList(
+    div(style = "margin-bottom: 50px;", grafico_idhm_mortalidade)
+  )
+)
+```
+
+#### Correlação
+```{r}
+# Seleciona apenas as duas variáveis do par e remove linhas com NA.
+# O na.omit() é necessário pois mortalidade infantil tem 294 municípios
+# sem registro (IBGE usa "-" quando o número de nascimentos é muito pequeno).
+par1 <- df_limpo %>%
+  select(idhm, mortalidadeInfantil_obitosPor1000) %>%
+  na.omit()
+
+# Calcula os três coeficientes de correlação
+r1    <- cor(par1$idhm, par1$mortalidadeInfantil_obitosPor1000, method = "pearson")
+rs1   <- cor(par1$idhm, par1$mortalidadeInfantil_obitosPor1000, method = "spearman")
+tau1  <- cor(par1$idhm, par1$mortalidadeInfantil_obitosPor1000, method = "kendall")
+
+
+test1 <- cor.test(par1$idhm, par1$mortalidadeInfantil_obitosPor1000)
+
+cat("n =", nrow(par1), "\n")
+cat("Pearson  r  =", round(r1,   3), "\n")
+cat("Spearman rs =", round(rs1,  3), "\n")
+cat("Kendall  τ  =", round(tau1, 3), "\n")
+cat("p-valor     =", round(test1$p.value, 4), "\n")
+
+```
+
+### PIB x IDHM {.tabset}
+
+#### Gráfico
+```{r}
+nova_paleta <- c("#2A044A", "#0B2E59", "#0D6759", "#7AB317", "#A0C55F") 
+
+# PIB per capita x IDHM
+grafico_pib_idhm <- plot_ly(
+  data = df_limpo,
+  x = ~pib_percapita,
+  y = ~idhm,
+  type = "scatter",
+  mode = "markers",
+  size = ~populacaoEstimada,
+  sizes = c(6, 60),
+  marker = list(
+    color = ~idhm,
+    colorscale = list(seq(0, 1, length.out = 5), nova_paleta),
+    showscale = TRUE,
+    colorbar = list(title = "<b>IDHM</b>", thickness = 15, len = 0.8),
+    opacity = 0.85,
+    line = list(color = "white", width = 0.8) 
+  ),
+  text = ~municipio,
+  hovertemplate = paste0(
+    "<span style='font-size:16px;'><b>%{text}</b></span><br><br>",
+    "<b>PIB per capita:</b> R$ %{x:,.2f}<br>",
+    "<b>IDHM:</b> %{y:.3f}<br>",
+    "<extra></extra>" 
+  )
+) %>%
+  layout(
+    title = list(text = "<b>Relação: PIB per capita vs. IDHM</b>", font = list(size = 20, color = "#2c3e50"), x = 0.05),
+    xaxis = list(title = "<b>PIB per capita (Escala Logarítmica)</b>", type = "log", gridcolor = "#f4f4f4", zeroline = FALSE),
+    yaxis = list(title = "<b>Índice de Desenvolvimento Humano (IDHM)</b>", gridcolor = "#f4f4f4", zeroline = FALSE),
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    hovermode = "closest",
+    font = list(family = "Helvetica, Arial, sans-serif") 
+  )
+
+# Receitas vs Despesas
+grafico_receita_despesa <- plot_ly(
+  data = df_limpo,
+  x = ~total_ReceitasBrutas,
+  y = ~total_DespesasBrutas,
+  type = "scatter",
+  mode = "markers",
+  size = ~populacaoEstimada,
+  sizes = c(6, 60),
+  marker = list(
+    color = ~idhm,
+    colorscale = list(seq(0, 1, length.out = 5), nova_paleta),
+    showscale = TRUE,
+    colorbar = list(title = "<b>IDHM</b>", thickness = 15, len = 0.8),
+    opacity = 0.85,
+    line = list(color = "white", width = 0.8)
+  ),
+  text = ~municipio,
+  hovertemplate = paste0(
+    "<span style='font-size:16px;'><b>%{text}</b></span><br><br>",
+    "<b>Receita Bruta:</b> R$ %{x:,.2f}<br>",
+    "<b>Despesa Bruta:</b> R$ %{y:,.2f}<br>",
+    "<b>IDHM:</b> %{marker.color:.3f}<br>",
+    "<extra></extra>"
+  )
+) %>%
+  layout(
+    title = list(text = "<b>Visão Financeira: Receitas vs. Despesas Brutas</b>", font = list(size = 20, color = "#2c3e50"), x = 0.05),
+    xaxis = list(title = "<b>Total de Receitas (Escala Logarítmica)</b>", type = "log", gridcolor = "#f4f4f4", zeroline = FALSE),
+    yaxis = list(title = "<b>Total de Despesas (Escala Logarítmica)</b>", type = "log", gridcolor = "#f4f4f4", zeroline = FALSE),
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    hovermode = "closest",
+    font = list(family = "Helvetica, Arial, sans-serif"),
+    shapes = list(
+      list(
+        type = "line",
+        x0 = min(df_limpo$total_ReceitasBrutas, na.rm=TRUE),
+        y0 = min(df_limpo$total_ReceitasBrutas, na.rm=TRUE),
+        x1 = max(df_limpo$total_ReceitasBrutas, na.rm=TRUE),
+        y1 = max(df_limpo$total_ReceitasBrutas, na.rm=TRUE),
+        line = list(color = "#bdc3c7", dash = "dot", width = 2)
+      )
+    )
+  )
+```
+
+```{r}
+browsable(
+  tagList(
+    div(style = "margin-bottom: 60px; padding: 20px; border: 1px solid #eee; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);", grafico_pib_idhm)
+  )
+)
+```
+
+#### Correlação
+```{r}
+# Seleciona as duas variáveis. O PIB per capita em MG tem distribuição
+# muito assimétrica: poucos municípios com valores extremamente altos
+# (grandes indústrias/mineradoras em populações pequenas) distorcem
+# o coeficiente de Pearson.
+par4 <- df_limpo %>%
+  select(pib_percapita, idhm) %>%
+  na.omit()
+
+# Calcula os três coeficientes de correlação
+r4    <- cor(par4$pib_percapita, par4$idhm, method = "pearson")
+rs4   <- cor(par4$pib_percapita, par4$idhm, method = "spearman")
+tau4  <- cor(par4$pib_percapita, par4$idhm, method = "kendall")
+
+
+test4 <- cor.test(par4$pib_percapita, par4$idhm)
+
+cat("n =", nrow(par4), "\n")
+cat("Pearson  r  =", round(r4,   3), "\n")
+cat("Spearman rs =", round(rs4,  3), "\n")
+cat("Kendall  τ  =", round(tau4, 3), "\n")
+cat("p-valor     =", round(test4$p.value, 4), "\n")
+```
+
+### Receita Bruta x Despesa Bruta {.tabset}
+
+#### Gráfico
+```{r}
+browsable(
+  tagList(
+    div(style = "margin-bottom: 40px; padding: 20px; border: 1px solid #eee; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);", grafico_receita_despesa)
+  )
+)
+```
+
+#### Correlação
+```{r}
+# Seleciona as duas variáveis orçamentárias dos municípios.
+# Espera-se correlação muito alta, pois a Lei de Responsabilidade Fiscal
+# exige equilíbrio entre receita e despesa nos municípios brasileiros.
+par5 <- df_limpo %>%
+  select(total_ReceitasBrutas, total_DespesasBrutas) %>%
+  na.omit()
+
+# Calcula os três coeficientes de correlação
+r5    <- cor(par5$total_ReceitasBrutas, par5$total_DespesasBrutas, method = "pearson")
+rs5   <- cor(par5$total_ReceitasBrutas, par5$total_DespesasBrutas, method = "spearman")
+tau5  <- cor(par5$total_ReceitasBrutas, par5$total_DespesasBrutas, method = "kendall")
+
+# Teste de hipótese: H0: rho = 0, a 5% de significância
+test5 <- cor.test(par5$total_ReceitasBrutas, par5$total_DespesasBrutas)
+
+cat("n =", nrow(par5), "\n")
+cat("Pearson  r  =", round(r5,   3), "\n")
+cat("Spearman rs =", round(rs5,  3), "\n")
+cat("Kendall  τ  =", round(tau5, 3), "\n")
+cat("p-valor     =", round(test5$p.value, 4), "\n")
+```
+
+### Correlações {.tabset}
+
+#### Tabela Resumo Correlações
+```{r}
+# Tabela resumo: consolida todos os coeficientes calculados acima
+# em um único quadro, pronto para o relatório.
+tabela_corr <- data.frame(
+  Par = c(
+    "IDHM × Mortalidade Infantil",
+    "Escolarização × IDHM",
+    "Receitas × IDHM",
+    "PIB per capita × IDHM",
+    "Receitas × Despesas"
+  ),
+  n = c(nrow(par1), nrow(par2), nrow(par3), nrow(par4), nrow(par5)),
+  Pearson_r   = round(c(r1, r2, r3, r4, r5), 3),
+  Spearman_rs = round(c(rs1, rs2, rs3, rs4, rs5), 3),
+  Kendall_tau = round(c(tau1, tau2, tau3, tau4, tau5), 3),
+  Forca   = c("Fraca", "Nula", "Fraca/Moderada*", "Moderada/Forte**", "Muito Forte"),
+  Sentido = c("Negativo", "Negativo", "Positivo", "Positivo", "Positivo")
+)
+
+knitr::kable(
+  tabela_corr,
+  col.names = c("Par de Variáveis", "n", "Pearson (r)",
+                "Spearman (rₛ)", "Kendall (τ)", "Força", "Sentido"),
+  caption   = "Resumo dos coeficientes de correlação — municípios de MG",
+  align     = c("l","c","c","c","c","c","c")
+)
+
+```
+
+#### Explicação Tabela
+A tabela consolida os coeficientes calculados para os cinco pares, permitindo uma comparação direta entre a força e o sentido de cada associação.
+
+Pearson fraco (r = 0,271) e Spearman moderado (rₛ = 0,463): municípios populosos distorcem o coeficiente linear.*
+
+Pearson moderado (r = 0,390) e Spearman forte (rₛ = 0,702): outliers extremos de PIB per capita distorcem o Pearson; o Spearman é o indicador mais adequado para este par.
+
+**IDHM × Mortalidade Infantil** — A correlação negativa fraca faz sentido: municípios mais desenvolvidos tendem a ter menor mortalidade infantil, por conta de melhor acesso à saúde e saneamento. A fraqueza do coeficiente é explicada pela defasagem de 13 anos entre as fontes (IDHM de 2010, mortalidade de 2023) e pela ausência de dados em municípios pequenos.
+
+**Escolarização × IDHM** — A correlação nula faz sentido no contexto atual de MG: a escolarização básica já é praticamente universal no estado (mediana de 99,3%), portanto essa variável não discrimina mais os municípios entre si. Não significa que educação e desenvolvimento sejam independentes — significa que esse indicador específico já atingiu seu teto.
+
+**Receitas × IDHM** — A correlação positiva moderada (pelo Spearman) faz sentido: municípios com maior capacidade fiscal tendem a investir mais em serviços públicos, o que se reflete no IDHM. A relação não é perfeita pois a eficiência do gasto varia muito entre municípios.
+
+**PIB per capita × IDHM** — A correlação forte (pelo Spearman) faz sentido e é o par mais interessante analiticamente: o Pearson subestima a relação por causa de outliers extremos (municípios com grandes mineradoras ou indústrias), mas o Spearman revela que, em termos de ordem, riqueza e desenvolvimento humano caminham juntos de forma consistente em MG.
+
+**Receitas × Despesas** — A correlação quase perfeita faz sentido e é totalmente esperada: a Lei de Responsabilidade Fiscal obriga os municípios a manterem equilíbrio orçamentário, fazendo com que receita e despesa sejam, por estrutura legal, praticamente proporcionais.
+
+***Com base nos dados da tabela de resumo, é possivel concluir que os valores, no geral, fazem sentido. Os coeficientes encontrados são coerentes com o que se conhece sobre os municípios de Minas Gerais.***
+
+#### Matriz de Correlação
+```{r}
+#| fig-width: 9
+#| fig-height: 8
+
+# Seleciona todas as variáveis numéricas da base para a matriz
+variaveis_num <- df_limpo %>%
+  select(areaTerritorial_km2, populacao_ultimoCenso, densidadeDemografica,
+         escolarizacao_6a14, idhm, mortalidadeInfantil_obitosPor1000,
+         total_ReceitasBrutas, total_DespesasBrutas, pib_percapita)
+
+# use = "pairwise.complete.obs": para cada par usa só as linhas sem NA
+# (necessário por causa dos valores ausentes em mortalidadeInfantil)
+matriz_cor <- cor(variaveis_num, method = "pearson",
+                  use = "pairwise.complete.obs")
+
+# Rótulos curtos para caber no gráfico
+rownames(matriz_cor) <- colnames(matriz_cor) <- c(
+  "Área", "Pop. Censo", "Densidade", "Escolariz.",
+  "IDHM", "Mort. Inf.", "Receitas", "Despesas", "PIB pc"
+)
+
+# Paleta personalizada usando as cores do grupo
+# Correlação negativa → roxo/azul escuro | zero → branco | positiva → verde
+paleta_matriz <- colorRampPalette(c("#29044a", "#0b2e58", "#ffffff",
+                                     "#7ab318", "#a0c55e"))(200)
+
+
+corrplot(matriz_cor,
+         method      = "color",
+         type        = "upper",
+         addCoef.col = "black",
+         number.cex  = 0.75,
+         tl.col      = "black",
+         tl.srt      = 45,
+         col         = paleta_matriz,
+         mar         = c(0, 0, 2, 0),
+         title       = "Matriz de Correlação de Pearson — Municípios de MG")
+```
+
+# Conclusão
+::: bloco-conclusao
+\[Texto\]
+:::
